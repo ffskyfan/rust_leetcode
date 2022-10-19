@@ -41,20 +41,79 @@ Constraints:
  */
 
 
-pub fn num_decodings(s: String) -> i32 {
+pub fn num_decodings_ex(s:&str) -> i32 {
+
+    let char_count = s.chars().count();
+
+    let mut count = 0;
+    let mut char_buffer = '0';
+    let mut use_char_buffer = false;
 
     for (i, c) in s.chars().enumerate() {
         if i==0 && c=='0' {
             return 0;
         }
 
+        let mut sub_str_decoded = false;
 
+        if c>='1' && c<='9' {
+            let sub_s = &s[i+1..char_count];
+            let sub_result = num_decodings_ex(sub_s);
+            if sub_result>0 {
+                count = sub_result + 1;
+            }
+            sub_str_decoded  = true;
 
+        }
 
+        if use_char_buffer==true {
+            if char_buffer=='1' {
+                if sub_str_decoded == false {
+                    let sub_s = &s[i+1..char_count];
+                    let sub_result = num_decodings_ex(sub_s);
+                    if sub_result >0 {
+                        count = sub_result + 1;
+                    }
+                    sub_str_decoded = true;
+                }
+            }
+            else if char_buffer=='2' {
+                if c>='0' || c<='6' {
+                    if sub_str_decoded == false {
+                        let sub_s = &s[i+1..char_count];
+                        let sub_result = num_decodings_ex(sub_s);
+                        if sub_result >0 {
+                            count = sub_result + 1;
+                        }
+                        sub_str_decoded = true;
+                    }
+                }
+            }
 
+            if sub_str_decoded == true {
+                break;
+            }
+        }
+        else {
 
+            if c=='1' || c=='2'{
+                char_buffer = c;
+                use_char_buffer = true;
+            }
+            else {
+                break;
+            }
+        }
     }
 
-    return 1;
+    return count;
+}
+
+
+pub fn num_decodings(s: String) -> i32 {
+
+    let result = num_decodings_ex(s.as_str());
+
+    return result;
         
 }
