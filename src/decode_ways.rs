@@ -38,82 +38,106 @@ Constraints:
     1 <= s.length <= 100
     s contains only digits and may contain leading zero(s).
 
- */
+*/
 
 
-pub fn num_decodings_ex(s:&str) -> i32 {
+pub fn num_decodings_ex(s:&str,result_vec: &mut Vec<i32>) -> i32 {
 
     let char_count = s.chars().count();
+    if char_count == 0 {
+        return 0;
+    }
 
-    let mut count = 0;
-    let mut char_buffer = '0';
-    let mut use_char_buffer = false;
+    let mut count_one = 0;
 
-    for (i, c) in s.chars().enumerate() {
-        if i==0 && c=='0' {
-            return 0;
-        }
-
-        let mut sub_str_decoded = false;
-
-        if c>='1' && c<='9' {
-            let sub_s = &s[i+1..char_count];
-            let sub_result = num_decodings_ex(sub_s);
-            if sub_result>0 {
-                count = sub_result + 1;
+    let mut chars = s.chars();
+    let first_char= chars.next();
+    if first_char>=Some('1') && first_char<=Some('9') {
+        let sub_s = &s[1..char_count];
+        if sub_s.is_empty() != true {
+            if result_vec[sub_s.len()] != -1 {
+                count_one = result_vec[sub_s.len()];
             }
-            sub_str_decoded  = true;
-
-        }
-
-        if use_char_buffer==true {
-            if char_buffer=='1' {
-                if sub_str_decoded == false {
-                    let sub_s = &s[i+1..char_count];
-                    let sub_result = num_decodings_ex(sub_s);
-                    if sub_result >0 {
-                        count = sub_result + 1;
-                    }
-                    sub_str_decoded = true;
+            else {
+                let sub_result = num_decodings_ex(sub_s, result_vec);
+                if sub_result>0 {
+                    count_one = sub_result;
                 }
-            }
-            else if char_buffer=='2' {
-                if c>='0' || c<='6' {
-                    if sub_str_decoded == false {
-                        let sub_s = &s[i+1..char_count];
-                        let sub_result = num_decodings_ex(sub_s);
-                        if sub_result >0 {
-                            count = sub_result + 1;
-                        }
-                        sub_str_decoded = true;
-                    }
-                }
-            }
-
-            if sub_str_decoded == true {
-                break;
             }
         }
         else {
-
-            if c=='1' || c=='2'{
-                char_buffer = c;
-                use_char_buffer = true;
-            }
-            else {
-                break;
-            }
+            count_one+=1
         }
+
     }
 
-    return count;
+    let mut count_two = 0;
+
+    let second_char = chars.next();
+    if second_char == None{
+        return count_one;
+    }
+    else {
+        if first_char==Some('1') {
+            let sub_s = &s[2..char_count];
+            if sub_s.is_empty() != true {
+                if result_vec[sub_s.len()] != -1 {
+                    count_two = result_vec[sub_s.len()];
+                }
+                else {
+                    let sub_result = num_decodings_ex(sub_s, result_vec);
+                    result_vec[sub_s.len()] = sub_result;
+                    if sub_result>0 {
+                        count_two = sub_result;
+                    }
+                }
+            }
+            else {
+                count_two+=1
+            }
+        }
+        else if first_char==Some('2') {
+            if second_char>=Some('0') && second_char<=Some('6') {
+                let sub_s = &s[2..char_count];
+                if sub_s.is_empty() != true {
+                    if result_vec[sub_s.len()] != -1 {
+                        count_two = result_vec[sub_s.len()];
+                    }
+                    else {
+                        let sub_result = num_decodings_ex(sub_s, result_vec);
+                        result_vec[sub_s.len()] = sub_result;
+                        if sub_result>0 {
+                            count_two = sub_result;
+                        }
+                    }
+                }
+                else {
+                    count_two+=1
+                }
+            }
+        }
+
+    }
+
+
+    return count_one+count_two;
 }
 
 
 pub fn num_decodings(s: String) -> i32 {
 
-    let result = num_decodings_ex(s.as_str());
+    let mut resulr_vec: Vec<i32> = Vec::new();
+    resulr_vec.resize(s.len()+1, -1);
+    let result = num_decodings_ex(s.as_str(), &mut resulr_vec);
 
     return result;
         
 }
+
+/*解法思路：
+    首先每个字符串开头都是可以分成单个字符和两个字符来分析的，单个字符如果可以解析成字母，那么就把后面的字符串
+    作为参数，重复目前的解析；如果是两个字符的话，如果成功，也是把后面的字符作为参数，重复这套解析方法。
+    这里的重点是会产生很多的重复操作，为了让重复的操作只执行一次，我们建立一个数组，以字符串的长度为长度，
+    每个长度的字符串的分析结果都存在这里，如果出现重复的计算，就直接到这里查表。
+
+*/

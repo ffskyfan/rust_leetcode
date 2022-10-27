@@ -11,7 +11,7 @@ fn main() {
     //println!("Hello, world! {}", result);
 
 
-    let test_str = String::from("12");
+    let test_str = String::from("111111111111111111111111111111111111111111111");
     let result = decode_ways::num_decodings(test_str);
 
     println!("Result: {}", result);
